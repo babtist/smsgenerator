@@ -1,0 +1,13 @@
+{
+  "serviceName": "SmsGeneratorService",
+  "taskDefinition": "Camp1-SmsGeneratorServiceTask",
+  "loadBalancers": [
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:eu-west-1:571908524012:targetgroup/Generator/a6555a4af7c22a23",
+      "containerName": "smsgenerator",
+      "containerPort": 8070
+    }
+  ],
+  "desiredCount": 1,
+  "role": "/ecsServiceRole"
+}

@@ -1,0 +1,35 @@
+{
+  "containerDefinitions" : [
+    {
+      "environment" : [
+        {
+          "name": "SERVICE_8070_NAME",
+          "value": "smsgenerator"
+        },
+        {
+          "name": "SERVICE_8070_CHECK_HTTP",
+          "value": "/generators/ping"
+        },
+        {
+          "name": "SERVICE_8070_CHECK_INTERVAL",
+          "value": "10s"
+        },
+        {
+          "name": "SERVICE_TAGS",
+          "value": "http"
+        }
+      ],
+      "name" : "smsgenerator",
+      "image" : "babtist/smsgenerator:0.0.2",
+      "memory":200,
+      "portMappings":[
+        {
+          "containerPort" : 8070,
+          "hostPort" : 8070
+        }
+      ],
+      "essential":true
+    }
+  ],
+  "family":"Camp1-SmsGeneratorServiceTask"
+}
