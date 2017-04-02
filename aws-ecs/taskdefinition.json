@@ -17,17 +17,28 @@
         {
           "name": "SERVICE_TAGS",
           "value": "http"
+        },
+        {
+          "name": "SQS_QUEUE_NAME",
+          "value": "SmsGenerator"
         }
       ],
       "name" : "smsgenerator",
       "image" : "babtist/smsgenerator:0.0.2",
-      "memory":200,
+      "memory":500,
       "portMappings":[
         {
           "containerPort" : 8070,
           "hostPort" : 8070
         }
       ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "SmsGenerator",
+          "awslogs-region": "eu-west-1"
+        }
+      },
       "essential":true
     }
   ],

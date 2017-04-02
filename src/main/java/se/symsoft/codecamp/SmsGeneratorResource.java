@@ -6,6 +6,10 @@ package se.symsoft.codecamp;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
+import com.amazonaws.services.sqs.AmazonSQSClient;
+import com.amazonaws.services.sqs.model.SendMessageBatchRequest;
+import com.amazonaws.services.sqs.model.SendMessageRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import se.symsoft.cc2016.logutil.Logged;
 
 import javax.inject.Inject;
@@ -21,6 +25,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -28,14 +34,23 @@ import java.util.UUID;
 @Path("generators")
 public class SmsGeneratorResource {
 
-    @Inject
-    DynamoDBMapper dynamoDB;
+
+    @Context
+    Application app;
+
+    private DynamoDBMapper getDynamo() {
+        return ((SmsGeneratorService) app).getDynamoDB();
+    }
+
+    private AmazonSQSClient getSqs() {
+        return ((SmsGeneratorService) app).getSqsClient();
+    }
 
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public void list(@Suspended final AsyncResponse asyncResponse) {
-        PaginatedScanList<GeneratorData> pageList = dynamoDB.scan(GeneratorData.class, new DynamoDBScanExpression());
+        PaginatedScanList<GeneratorData> pageList = getDynamo().scan(GeneratorData.class, new DynamoDBScanExpression());
         asyncResponse.resume(pageList);
     }
 
@@ -53,9 +68,9 @@ public class SmsGeneratorResource {
         data.setId(UUID.randomUUID());
         data.setState(GeneratorData.STATE_IDLE);
         try {
-            dynamoDB.save(data);
-            SmsGenerator generator = new SmsGenerator(data, dynamoDB);
-            new Thread(generator::start).start();
+            getDynamo().save(data);
+            getSqs().sendMessage(((SmsGeneratorService) app).getQueueUrl(), new ObjectMapper().writeValueAsString(data));
+
             asyncResponse.resume(data);
         } catch (Exception e) {
             e.printStackTrace();
@@ -68,13 +83,13 @@ public class SmsGeneratorResource {
     @Logged
     public void update(@Suspended final AsyncResponse asyncResponse, final GeneratorData data) throws URISyntaxException {
         try {
-            final GeneratorData generatorData = dynamoDB.load(GeneratorData.class, data.getId());
+            final GeneratorData generatorData = getDynamo().load(GeneratorData.class, data.getId());
             if (generatorData == null) {
                 asyncResponse.resume(new NotFoundException("Entity with id = " + data.getId() + " not found"));
                 return;
             }
             data.setState(generatorData.getState());
-            dynamoDB.save(data);
+            getDynamo().save(data);
 
             asyncResponse.resume(data);
         } catch (Exception e) {
@@ -89,7 +104,7 @@ public class SmsGeneratorResource {
     @Logged
     public void start(@Suspended final AsyncResponse asyncResponse, @PathParam("id") UUID id) throws URISyntaxException {
         try {
-            final GeneratorData data = dynamoDB.load(GeneratorData.class, id);
+            final GeneratorData data = getDynamo().load(GeneratorData.class, id);
             if (data == null) {
                 asyncResponse.resume(new NotFoundException("Entity with id = " + id + " not found"));
                 return;
@@ -101,9 +116,10 @@ public class SmsGeneratorResource {
             data.setState(GeneratorData.STATE_RUNNING);
             data.setSuccess(0);
             data.setFailed(0);
-            dynamoDB.save(data);
-            SmsGenerator generator = new SmsGenerator(data, dynamoDB);
-            new Thread(generator::start).start();
+            getDynamo().save(data);
+
+            getSqs().sendMessage(((SmsGeneratorService) app).getQueueUrl(), new ObjectMapper().writeValueAsString(data));
+
             asyncResponse.resume(data);
         } catch (Exception e) {
             e.printStackTrace();
@@ -117,7 +133,7 @@ public class SmsGeneratorResource {
     @Logged
     public void stop(@Suspended final AsyncResponse asyncResponse, @PathParam("id") UUID id) throws URISyntaxException {
         try {
-            final GeneratorData data = dynamoDB.load(GeneratorData.class, id);
+            final GeneratorData data = getDynamo().load(GeneratorData.class, id);
             if (data == null) {
                 asyncResponse.resume(new NotFoundException("Entity with id = " + id + " not found"));
                 return;
@@ -125,7 +141,7 @@ public class SmsGeneratorResource {
             if (data.getState() == GeneratorData.STATE_RUNNING) {
                 // Trying to stop an idle generator
                 data.setState(GeneratorData.STATE_STOPPING);
-                dynamoDB.save(data);
+                getDynamo().save(data);
             }
             asyncResponse.resume(data);
         } catch (Exception e) {
@@ -138,9 +154,9 @@ public class SmsGeneratorResource {
     @Path("{id}")
     public void delete(@Suspended final AsyncResponse asyncResponse, @PathParam("id") UUID id) {
         try {
-            final GeneratorData generatorData = dynamoDB.load(GeneratorData.class, id);
+            final GeneratorData generatorData = getDynamo().load(GeneratorData.class, id);
             if (generatorData != null) {
-                dynamoDB.delete(generatorData);
+                getDynamo().delete(generatorData);
                 asyncResponse.resume(generatorData);
             } else {
                 asyncResponse.resume(new NotFoundException("Entity with id = " + id + " not found"));

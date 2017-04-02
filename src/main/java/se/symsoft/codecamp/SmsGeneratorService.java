@@ -3,7 +3,12 @@
  */
 package se.symsoft.codecamp;
 
+import com.amazonaws.AmazonWebServiceClient;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.sqs.AmazonSQSClient;
+import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import io.swagger.models.Contact;
 import io.swagger.models.Info;
@@ -24,34 +29,65 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class SmsGeneratorService {
+public class SmsGeneratorService extends ResourceConfig {
 
 
     private static final String API_VERSION = "0.0.1";
+    private final UUID id;
     private Swagger swagger;
+    private DynamoDBMapper dynamoDB;
+    private AmazonSQSClient sqsClient;
+    private String queueUrl;
 
-    static HttpServer startServer() throws IOException {
+    public SmsGeneratorService() {
+        super(SmsGeneratorResource.class);
+        register(RequestLoggingFilter.class);
+        register(JacksonJsonProvider.class);
+        id = UUID.randomUUID();
+    }
+
+    private HttpServer start() throws IOException {
+        AmazonDynamoDBClient amazonDynamoDBClient = new AmazonDynamoDBClient().withRegion(Regions.EU_WEST_1);
+        dynamoDB = new DynamoDBMapper(amazonDynamoDBClient);
+
+        sqsClient = new AmazonSQSClient().withRegion(Regions.EU_WEST_1);
+        String queueName = System.getenv("SQS_QUEUE_NAME");
+        System.out.println("SQS_QUEUE_NAME = " + queueName);
+        GetQueueUrlResult result = sqsClient.getQueueUrl(queueName);
+        queueUrl = result.getQueueUrl();
+        SqsMessageReceiver sqsMessageReceiver = new SqsMessageReceiver(this, sqsClient,
+                queueName);
+        new Thread(sqsMessageReceiver).start();
 
         Metrics.startGraphiteMetricsReporter();
 
         URI baseUri = UriBuilder.fromUri("http://0.0.0.0/").port(8070).build();
-        ResourceConfig config = new ResourceConfig(SmsGeneratorResource.class, SnsResource.class);
-        config.register(RequestLoggingFilter.class);
-        config.register(JacksonJsonProvider.class);
-        config.register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bindFactory(DynamoDbFactory.class).to(DynamoDBMapper.class);
-            }
-        });
 
-        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(baseUri, config);
+        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(baseUri, this);
         server.getServerConfiguration().addHttpHandler(new CLStaticHttpHandler(SmsGeneratorService.class.getClassLoader(), "web/"),"/generator-ui");
         server.start();
         return  server;
+    }
+
+    public DynamoDBMapper getDynamoDB() {
+        return dynamoDB;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getQueueUrl() {
+        return queueUrl;
+    }
+
+    public AmazonSQSClient getSqsClient() {
+        return sqsClient;
     }
 
     private void setupSwagger() {
@@ -79,9 +115,10 @@ public class SmsGeneratorService {
     public static void main(String[] args) throws IOException, InterruptedException {
 
         ExecutorService executor = Executors.newFixedThreadPool(1);
+        SmsGeneratorService smsGeneratorService = new SmsGeneratorService();
         executor.execute(() -> {
             try {
-                startServer();
+                smsGeneratorService.start();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -90,4 +127,5 @@ public class SmsGeneratorService {
 
 
     }
+
 }
