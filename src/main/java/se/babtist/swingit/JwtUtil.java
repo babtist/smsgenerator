@@ -3,14 +3,15 @@
  */
 package se.babtist.swingit;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+
 import javax.crypto.spec.SecretKeySpec;
-import javax.ws.rs.NotFoundException;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
-
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import io.jsonwebtoken.*;
-
 import java.util.Date;
 import java.util.UUID;
 

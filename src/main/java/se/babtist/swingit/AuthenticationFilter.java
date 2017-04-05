@@ -3,12 +3,7 @@
  */
 package se.babtist.swingit;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
@@ -21,9 +16,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import org.glassfish.jersey.internal.util.Base64;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This filter verify the access permissions for a user
