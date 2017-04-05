@@ -1,0 +1,49 @@
+<h4>
+    Players
+</h4>
+<form ng-submit="submitPlayer()">
+
+
+    <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" class="form-control" ng-model="playerForm.name" />
+        <label>User Name</label>
+        <input type="text" class="form-control" ng-model="playerForm.username" />
+        <label>Password</label>
+        <input type="password" class="form-control" ng-model="playerForm.password" />
+        <label>Role</label>
+        <select name="roleSelect" id="roleSelect" class="form-control" ng-model="playerForm.role">
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+            <option value="GUEST">GUEST</option>
+        </select>
+
+    </div>
+
+    <button type="submit" class="btn btn-primary" >Save</button>
+</form>
+<table class="table table-hover">
+    <tr>
+
+        <th>Full Name</th>
+        <th>User Name</th>
+        <th>Password</th>
+        <th>Role</th>
+
+
+    </tr>
+
+    <tr ng-repeat="player in players">
+
+        <td> {{ player.name }}</td>
+        <td> {{ player.username }}</td>
+        <td> ***</td>
+        <td> {{ player.role }}</td>
+
+
+        <td><a ng-click="editPlayer(player)" class="btn btn-primary btn-sm">Edit</a>
+            <a ng-click="deletePlayer(player)" class="btn btn-primary btn-sm">Delete</a></td>
+
+    </tr>
+
+</table>

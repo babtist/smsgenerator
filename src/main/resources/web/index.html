@@ -3,204 +3,36 @@
 <head>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.8/angular-ui-router.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="swingit/app.js"></script>
+    <title>Swing IT</title>
 
-    <title>SMS Generators</title>
-    <script type="text/javascript">
-            var app = angular.module("SmsGenerator", []);
-           
-            //Controller Part  
-            app.controller("SmsGeneratorController", function($scope, $http) {
-           
-                 
-                $scope.generators = [];
-                $scope.generatorForm = {
-                    id : "",
-                    description : "",
-                    rate : "",
-                    duration : "",
-                    deliveryUrl : "",
-                    state : "",
-                    success: 0,
-                    failed: 0
 
-                };  
-           
-                //Now load the data from server  
-                _refreshGeneratorData();
 
-                $scope.submitGenerator = function() {
-           
-                    var method = "";  
-                    var url = "";  
-                    if ($scope.generatorForm.id == "") {
-                        //Id is absent in form data, it is create new generator operation
-                        method = "POST";  
-                        url = 'generators';
-                    } else {  
-                        //Id is present in form data, it is edit generator operation
-                        method = "PUT";  
-                        url = 'generators';
-                    }  
-           
-                    $http({  
-                        method : method,  
-                        url : url,  
-                        data : angular.toJson($scope.generatorForm),
-                        headers : {  
-                            'Content-Type' : 'application/json'  
-                        }  
-                    }).then( _success, _error );  
-                };  
-           
-                $scope.deleteGenerator = function(generator) {
-                    $http({  
-                        method : 'DELETE',  
-                        url : 'generators/' + generator.id
-                    }).then(_success, _error);  
-                };
-
-                $scope.startGenerator = function(generator) {
-                    generator.state = 1;
-                    $http({
-                        method : 'PUT',
-                        url : 'generators/' + generator.id + '/start',
-                        headers : {
-                            'Content-Type' : 'application/json'
-                        }
-                    }).then( _success, _error );
-                };
-
-                $scope.stopGenerator = function(generator) {
-                    generator.state = 1;
-                    $http({
-                        method : 'PUT',
-                        url : 'generators/' + generator.id + '/stop',
-                        headers : {
-                            'Content-Type' : 'application/json'
-                        }
-                    }).then( _success, _error );
-                };
-   
-                $scope.editGenerator = function(generator) {
-                    
-                    $scope.generatorForm.description = generator.description;
-                    $scope.generatorForm.rate = generator.rate;
-                    $scope.generatorForm.duration = generator.duration;
-                    $scope.generatorForm.deliveryUrl = generator.deliveryUrl;
-                    $scope.generatorForm.id = generator.id;
-                    $scope.generatorForm.state = generator.state;
-                    $scope.generatorForm.success = generator.success;
-                    $scope.generatorForm.failed = generator.failed;
-
-                };  
-           
-                /* Private Methods */  
-                //HTTP GET- get all generators collection
-                function _refreshGeneratorData() {
-                    $http({  
-                        method : 'GET',  
-                        url : 'generators'
-                    }).then(function successCallback(response) {  
-                        $scope.generators = response.data;
-                    }, function errorCallback(response) {  
-                        console.log(response.statusText);  
-                    });  
-                }  
-           
-                function _success(response) {  
-                    _refreshGeneratorData();
-                    _clearFormData()  
-                }  
-           
-                function _error(response) {  
-                    console.log(response.statusText);  
-                }  
-           
-                //Clear the form  
-                function _clearFormData() {  
-                    $scope.generatorForm.id = "";
-                    $scope.generatorForm.description = "";
-                    $scope.generatorForm.rate = "";
-                    $scope.generatorForm.duration = "";
-                    $scope.generatorForm.deliveryUrl = "";
-                    $scope.generatorForm.state = "";
-                    $scope.generatorForm.success = 0;
-                    $scope.generatorForm.failed = 0;
-                  
-                };  
-            });  
-        </script>
-
-<head>
+</head>
 
     <div class="container">
-        <body ng-app="SmsGenerator" ng-controller="SmsGeneratorController">
-        <img class="img-responsive" src="generator-ui/logo.png" alt="Chania">
+        <body ng-app="SwingIt" ng-controller="IndexController">
 
-        <h1>
-            SMS Generators
-        </h1>
-        <form ng-submit="submitGenerator()">
-
-
-            <div class="form-group">
-                <label>Description</label>
-                <input type="text" class="form-control" ng-model="generatorForm.description" />
+        <nav class="navbar navbar-light" style="background-color: #e3f2fd;" role="navigation">
+            <div class="navbar-header">
+                <a class="navbar-brand" ui-sref="#">Swing</a>
             </div>
-            <div class="form-group">
-                <label>Rate</label>
-                <input type="text" class="form-control" ng-model="generatorForm.rate"  />
-            </div>
-            <div class="form-group">
-                <label>Duration</label>
-                <input type="text" class="form-control" ng-model="generatorForm.duration"  />
-            </div>
-            <div class="form-group">
-                <label>Delivery URL</label>
-                <input type="text" class="form-control" ng-model="generatorForm.deliveryUrl"  />
-            </div>
-
-            <button type="submit" class="btn btn-primary" >Submit</button>
-        </form>
-        <table class="table table-hover">
-            <tr>
-
-                <th>Description</th>
-                <th>Rate</th>
-                <th>Duration</th>
-                <th>Delivery URL</th>
-                <th>State</th>
-                <th>Success</th>
-                <th>Failed</th>
-                <th>Operations</th>
-
-            </tr>
-
-            <tr ng-repeat="generator in generators">
-
-                <td> {{ generator.description }}</td>
-                <td >{{ generator.rate }}</td>
-                <td >{{ generator.duration }}</td>
-                <td >{{ generator.deliveryUrl }}</td>
-                <td ><div ng-switch="generator.state">
-                    <div ng-switch-when="0">Idle</div>
-                    <div ng-switch-when="1" class="text-success">Running</div>
-                    <div ng-switch-when="2" class="text-warning">Stopping</div>
-                    <div ng-switch-default>Unknown</div>
-                </div></td>
-                <td >{{ generator.success }}</td>
-                <td >{{ generator.failed }}</td>
-
-                <td><a ng-click="editGenerator(generator)" class="btn btn-primary btn-sm">Edit</a>
-                    <a ng-click="startGenerator(generator)" ng-disabled="generator.state!=0" class="btn btn-primary btn-sm">Start</a>
-                    <a ng-click="stopGenerator(generator)" ng-disabled="generator.state!=1" class="btn btn-primary btn-sm">Stop</a>
-                    <a ng-click="deleteGenerator(generator)" ng-disabled="generator.state!=0" class="btn btn-primary btn-sm">Delete</a></td>
-
-            </tr>
-
-        </table>
+            <ul class="nav navbar-nav">
+                <li><a ui-sref="rounds">Rounds</a></li>
+                <li ng-show="role == 'ADMIN'"><a ui-sref="players">Players</a></li>
+                <li><a ui-sref="leaderboard">Leaderbord</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a ui-sref="logout">Logout</a></li>
+            </ul>
+        </nav>
 
 
+
+        <div ui-view></div>
 
 
 

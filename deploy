@@ -1,6 +1,6 @@
 #!/bin/bash 
 mvn clean install
-docker build -t babtist/smsgenerator:0.0.2 .
-docker push babtist/smsgenerator:0.0.2
+docker build -t babtist/swingit:0.0.1 .
+docker push babtist/swingit:0.0.1
 aws ecs register-task-definition --cli-input-json file://aws-ecs/taskdefinition.json
-aws ecs update-service --cluster Camp1 --service SmsGeneratorService --task-definition Camp1-SmsGeneratorServiceTask
+aws ecs update-service --cluster Lime --service SwingItService --task-definition Lime-SwingItServiceTask

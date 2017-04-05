@@ -1,10 +1,10 @@
 {
-  "serviceName": "SmsGeneratorService",
-  "taskDefinition": "Camp1-SmsGeneratorServiceTask",
+  "serviceName": "SwingItService",
+  "taskDefinition": "Lime-SwingItServiceTask",
   "loadBalancers": [
     {
-      "targetGroupArn": "arn:aws:elasticloadbalancing:eu-west-1:571908524012:targetgroup/Generator/a6555a4af7c22a23",
-      "containerName": "smsgenerator",
+      "targetGroupArn": "arn:aws:elasticloadbalancing:eu-west-1:571908524012:targetgroup/Limes-Defau-IH1KN9UFKUXM/80fdc41c228dca38",
+      "containerName": "swingit",
       "containerPort": 8070
     }
   ],

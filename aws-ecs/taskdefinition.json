@@ -4,11 +4,11 @@
       "environment" : [
         {
           "name": "SERVICE_8070_NAME",
-          "value": "smsgenerator"
+          "value": "swingit"
         },
         {
           "name": "SERVICE_8070_CHECK_HTTP",
-          "value": "/generators/ping"
+          "value": "/players/ping"
         },
         {
           "name": "SERVICE_8070_CHECK_INTERVAL",
@@ -17,14 +17,10 @@
         {
           "name": "SERVICE_TAGS",
           "value": "http"
-        },
-        {
-          "name": "SQS_QUEUE_NAME",
-          "value": "SmsGenerator"
         }
       ],
-      "name" : "smsgenerator",
-      "image" : "babtist/smsgenerator:0.0.2",
+      "name" : "swingit",
+      "image" : "babtist/swingit:0.0.1",
       "memory":500,
       "portMappings":[
         {
@@ -32,15 +28,8 @@
           "hostPort" : 8070
         }
       ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "SmsGenerator",
-          "awslogs-region": "eu-west-1"
-        }
-      },
       "essential":true
     }
   ],
-  "family":"Camp1-SmsGeneratorServiceTask"
+  "family":"Lime-SwingItServiceTask"
 }

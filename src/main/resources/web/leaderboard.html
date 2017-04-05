@@ -1,0 +1,21 @@
+<h4>
+    Leaderboard
+</h4>
+
+<table class="table table-hover">
+    <tr>
+
+        <th>Name</th>
+        <th>Score</th>
+
+    </tr>
+
+    <tr ng-repeat="entry in boardentries">
+
+        <td >{{ entry.playerName }}</td>
+        <td >{{ entry.score }}</td>
+
+
+    </tr>
+
+</table>

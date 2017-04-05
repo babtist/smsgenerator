@@ -1,0 +1,89 @@
+<h4>
+    Rounds
+</h4>
+<button type="button" ng-if="role == 'ADMIN' || role == 'USER'" class="btn btn-info btn-primary" data-toggle="modal" data-target="#myModal">Add Round</button>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Add new round</h4>
+            </div>
+            <div class="modal-body">
+                <form ng-submit="submitRound()">
+
+
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" class="form-control" ng-model="roundForm.date" placeholder="yyyy-MM-dd"  />
+
+
+                    </div>
+                    <div class="form-group">
+                        <label>Player</label>
+                        <br/>
+                        <select name="playerSelect" id="playerSelect1" class="form-control" ng-model="roundForm.playerId">
+                            <option ng-if="role == 'ADMIN'" value="">---Please select---</option> <!-- not selected / blank option -->
+                            <option ng-if="role == 'ADMIN'" ng-repeat="player in players" value="{{player.id}}">{{player.name}}</option>
+                            <option ng-if="role == 'USER'"  value="{{playerId}}">{{playerName}}</option>
+
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Hcp</label>
+                        <input type="text" class="form-control" ng-model="roundForm.hcp"  />
+                    </div>
+                    <div class="form-group">
+                        <label>Score</label>
+                        <input type="text" class="form-control" ng-model="roundForm.score"  />
+                    </div>
+
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="submitRound()">Save</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<table class="table table-hover">
+    <tr>
+
+        <th>Date</th>
+        <th>Player</th>
+        <th>Hcp</th>
+        <th>Score</th>
+
+
+    </tr>
+
+    <tr ng-repeat="round in rounds">
+
+        <td> {{ round.date }}</td>
+        <td >{{ round.playerName }}</td>
+        <td >{{ round.hcp }}</td>
+        <td >{{ round.score }}</td>
+
+
+        <td>
+            <div class="dropdown">
+                <a class="dropdown-toggle glyphicon glyphicon-th-list" id="menu1" data-toggle="dropdown"></a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+                    <li role="presentation"><a ng-if="(round.playerId == playerId) || (role == 'ADMIN')" ng-click="editRound(round)" data-toggle="modal" data-target="#myModal">Edit</a></li>
+                    <li role="presentation"><a ng-if="(round.playerId == playerId) || (role == 'ADMIN')" ng-click="deleteRound(round)">Delete</a></li>
+                </ul>
+            </div>
+        </td>
+
+    </tr>
+
+</table>
